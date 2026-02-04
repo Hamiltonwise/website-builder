@@ -26,6 +26,11 @@ export interface Project {
   updated_at: Date;
 }
 
+// Page content structure (JSONB)
+export interface PageContent {
+  html: string;
+}
+
 // Page model
 export interface Page {
   id: string;
@@ -33,7 +38,7 @@ export interface Page {
   path: string;
   version: number;
   status: PageStatus;
-  html_content: string;
+  html_content: PageContent;
   created_at: Date;
   updated_at: Date;
 }

@@ -1,5 +1,5 @@
 import { getDb } from '../db';
-import type { Page, PageStatus } from '@/types';
+import type { Page, PageStatus, PageContent } from '@/types';
 
 const db = getDb();
 
@@ -7,6 +7,7 @@ const db = getDb();
  * Create a new page version for a project
  * - Marks any existing draft as inactive
  * - Creates new page with incremented version
+ * @param htmlContent - The raw HTML string to store (will be wrapped in { html: ... })
  */
 export async function createPageVersion(
   projectId: string,
@@ -33,6 +34,9 @@ export async function createPageVersion(
       updated_at: db.fn.now(),
     });
 
+  // Wrap HTML in the expected JSONB structure
+  const content: PageContent = { html: htmlContent };
+
   // Create the new draft
   const [page] = await db('pages')
     .insert({
@@ -40,7 +44,7 @@ export async function createPageVersion(
       path,
       version: newVersion,
       status: 'draft',
-      html_content: htmlContent,
+      html_content: content,
     })
     .returning('*');
 

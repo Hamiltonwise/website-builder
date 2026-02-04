@@ -1,3 +1,4 @@
+// TODO: Protect this API with authentication (API key or auth header)
 import { NextRequest, NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import { scrapeLogger } from '@/lib/logger';

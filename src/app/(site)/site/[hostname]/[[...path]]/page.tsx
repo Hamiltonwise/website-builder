@@ -377,17 +377,18 @@ export default async function SitePage({ params }: SitePageProps) {
     // Try the home page as fallback for non-root paths
     if (pagePath !== '/') {
       const homePage = await getPageToRender(project.id, '/');
-      if (homePage) {
+      if (homePage?.html_content?.html) {
         // Render customer's HTML content directly
-        return <div dangerouslySetInnerHTML={{ __html: homePage.html_content }} />;
+        return <div dangerouslySetInnerHTML={{ __html: homePage.html_content.html }} />;
       }
     }
 
     return <PageNotFoundPage businessName={businessName} />;
   }
 
-  // Render the customer's HTML content directly
-  return <div dangerouslySetInnerHTML={{ __html: page.html_content }} />;
+  // Render the customer's HTML content directly from the html property
+  const htmlToRender = page.html_content?.html || '';
+  return <div dangerouslySetInnerHTML={{ __html: htmlToRender }} />;
 }
 
 // Disable caching for dynamic site rendering
