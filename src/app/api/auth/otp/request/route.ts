@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/db";
+import { getDb } from "@/lib/db";
 import { sendOTP } from "@/lib/auth/mail";
 
 const TEST_EMAIL = "tester@google.com";
