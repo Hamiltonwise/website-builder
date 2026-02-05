@@ -105,12 +105,12 @@ export default function LoginForm() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <motion.div
-            className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-alloro-orange to-brand-600 shadow-lg mb-4 flex items-center justify-center"
+          <motion.img
+            src="/alloro-logo.png"
+            alt="Alloro Logo"
+            className="mx-auto h-16 w-16 rounded-2xl shadow-lg mb-4"
             whileHover={{ scale: 1.05 }}
-          >
-            <span className="text-2xl font-bold text-white">W</span>
-          </motion.div>
+          />
           <h1 className="text-2xl font-bold text-gray-900">
             <span className="text-alloro-orange">Website Builder</span> Admin
           </h1>
