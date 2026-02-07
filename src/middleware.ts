@@ -13,6 +13,7 @@ const PUBLIC_ROUTES = [
   '/login',
   '/api/auth/otp/request',
   '/api/auth/otp/verify',
+  '/api/site/contact',
 ];
 
 // Check if a path is public
@@ -56,11 +57,20 @@ async function validateToken(token: string): Promise<boolean> {
 export async function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const pathname = request.nextUrl.pathname;
+  const token = request.cookies.get('auth_token')?.value;
+
+  // If user is on login page and has valid token, redirect to home
+  if (pathname === '/login' && token) {
+    const isValid = await validateToken(token);
+    if (isValid) {
+      // Get redirect param or default to /projects
+      const redirectTo = request.nextUrl.searchParams.get('redirect') || '/projects';
+      return NextResponse.redirect(new URL(redirectTo, request.url));
+    }
+  }
 
   // Check authentication for non-public routes
   if (!isPublicRoute(pathname) && !pathname.startsWith('/api/')) {
-    const token = request.cookies.get('auth_token')?.value;
-
     if (!token) {
       // Redirect to login page
       const loginUrl = new URL('/login', request.url);
@@ -83,6 +93,12 @@ export async function middleware(request: NextRequest) {
 
   if (siteMatch) {
     const hostname = siteMatch[1];
+
+    // Let API requests pass through without subdomain rewriting
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.next();
+    }
+
     console.log(`[Middleware] Site request: ${hostname}${pathname}`);
 
     // Rewrite to site rendering route
