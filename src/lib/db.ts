@@ -1,35 +1,71 @@
 import knex, { Knex } from 'knex';
 
-const defaultSchema = process.env.DATABASE_SCHEMA || 'website_builder';
-
-const config: Knex.Config = {
-  client: 'pg',
-  connection: process.env.DATABASE_URL || {
-    host: process.env.DATABASE_HOST || 'localhost',
-    port: parseInt(process.env.DATABASE_PORT || '5432'),
-    database: process.env.DATABASE_NAME,
-    user: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
-    ssl: process.env.DATABASE_HOST !== 'localhost' ? { rejectUnauthorized: false } : false,
-  },
-  pool: {
-    min: 2,
-    max: 10,
-    afterCreate: (conn: { query: (sql: string, cb: (err: Error | null) => void) => void }, done: (err: Error | null, conn: unknown) => void) => {
-      conn.query(`SET search_path TO "${defaultSchema}", public;`, (err) => {
-        done(err, conn);
-      });
+function buildConfig(): Knex.Config {
+  const defaultSchema = process.env.DATABASE_SCHEMA || 'website_builder';
+  const environment = process.env.NODE_ENV || 'development';
+  const shared = {
+    client: 'pg' as const,
+    connection: {
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || '5432'),
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      ssl: { rejectUnauthorized: false },
     },
-  },
-  searchPath: [defaultSchema, 'public'],
-};
+    searchPath: [defaultSchema, 'public'],
+  };
+
+  const afterCreate = (conn: { query: (sql: string, cb: (err: Error | null) => void) => void }, done: (err: Error | null, conn: unknown) => void) => {
+    conn.query(`SET search_path TO "${defaultSchema}", public;`, (err) => {
+      done(err, conn);
+    });
+  };
+
+  const configs: { [key: string]: Knex.Config } = {
+    production: {
+      ...shared,
+      pool: {
+        min: 2,
+        max: 50,
+        acquireTimeoutMillis: 90000,
+        createTimeoutMillis: 30000,
+        destroyTimeoutMillis: 5000,
+        idleTimeoutMillis: 30000,
+        reapIntervalMillis: 1000,
+        createRetryIntervalMillis: 200,
+        propagateCreateError: false,
+        afterCreate,
+      },
+      acquireConnectionTimeout: 90000,
+    },
+    development: {
+      ...shared,
+      pool: {
+        min: 2,
+        max: 10,
+        acquireTimeoutMillis: 60000,
+        createTimeoutMillis: 10000,
+        destroyTimeoutMillis: 5000,
+        idleTimeoutMillis: 30000,
+        reapIntervalMillis: 1000,
+        createRetryIntervalMillis: 200,
+        propagateCreateError: false,
+        afterCreate,
+      },
+      acquireConnectionTimeout: 60000,
+    },
+  };
+
+  return configs[environment] || configs.development;
+}
 
 // Create a singleton instance
 let db: Knex | null = null;
 
 export function getDb(): Knex {
   if (!db) {
-    db = knex(config);
+    db = knex(buildConfig());
   }
   return db;
 }

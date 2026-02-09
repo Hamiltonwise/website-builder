@@ -2,8 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'website-builder',
-      script: 'node_modules/next/dist/bin/next',
-      args: 'start -p 7777',
+      script: 'dist/index.js',
       cwd: './',
       instances: 1,
       autorestart: true,

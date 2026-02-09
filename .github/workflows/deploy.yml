@@ -18,30 +18,27 @@ jobs:
           node-version: 20
 
       # Inject .env file from GitHub Secrets
-      - name: Create .env.local file
+      - name: Create .env file
         run: |
-          echo "${{ secrets.ENV_FILE }}" > .env.local
+          echo "${{ secrets.ENV_FILE }}" > .env
 
       # Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # Build Next.js app
-      - name: Build Next.js
+      # Build app
+      - name: Build app
         run: npm run build
 
       # Prepare deployment bundle
       - name: Prepare deploy bundle
         run: |
           mkdir -p bundle
-          cp -r .next bundle/
+          cp -r dist bundle/
           cp -r public bundle/ 2>/dev/null || true
           cp package*.json bundle/
-          cp next.config.ts bundle/ 2>/dev/null || true
-          cp next.config.js bundle/ 2>/dev/null || true
           cp ecosystem.config.js bundle/
-          cp .env.local bundle/
-          mkdir -p bundle/logs
+          cp .env bundle/
 
       # Clean EC2 target directory
       - name: Clean remote target dir
