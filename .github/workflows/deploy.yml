@@ -79,4 +79,6 @@ jobs:
             nvm use node
             cd ${{ secrets.TARGET_DIR }}
             npm install --production
-            pm2 reload ecosystem.config.js || pm2 start ecosystem.config.js
+            pm2 delete website-builder 2>/dev/null || true
+            pm2 start ecosystem.config.js
+            pm2 save
